@@ -74,10 +74,11 @@ jobs:
 
       - name: Create index page with manifest information
         run: |
-          cp template.html build-output/index.html
-            
-          EXTENSION_LIST=""
-
+          # Create a temporary file for the extension list
+          TEMP_LIST_FILE=$(mktemp)
+          TODAY_DATE=$(date '+%d %B %Y')
+          
+          # Generate extension list in a separate file
           cd build-output
           for dir in */; do
             if [ "$dir" != "index.html" ]; then
@@ -94,20 +95,27 @@ jobs:
                 DESCRIPTION="No description available"
               fi
               
-              EXTENSION_ENTRY="
-              <li>
-                <span class='project-name'>$NAME</span>
-                <p class='project-description'>$DESCRIPTION</p>
-                <a href='teeviapp:///extensions?install=$FULL_URL' target='_blank' rel='noopener noreferrer' class='install-btn'>Install Extension</a>
-              </li>"
-              
-              EXTENSION_LIST="${EXTENSION_LIST}${EXTENSION_ENTRY}"
+              # Append to temporary file
+              echo "              <li>" >> $TEMP_LIST_FILE
+              echo "                <span class='project-name'>$NAME</span>" >> $TEMP_LIST_FILE
+              echo "                <p class='project-description'>$DESCRIPTION</p>" >> $TEMP_LIST_FILE
+              echo "                <a href='teeviapp:///extensions?install=$FULL_URL' target='_blank' rel='noopener noreferrer' class='install-btn'>Install Extension</a>" >> $TEMP_LIST_FILE
+              echo "              </li>" >> $TEMP_LIST_FILE
             fi
           done
-
-          TODAY_DATE=$(date '+%d %B %Y')
-          sed -i "s@<!-- EXTENSION_LIST_PLACEHOLDER -->@${EXTENSION_LIST}@g" index.html
-          sed -i "s@<!-- DATE_PLACEHOLDER -->@${TODAY_DATE}@g" index.html
+          
+          # Read the template file
+          cat $GITHUB_WORKSPACE/template.html > index.html.new
+          
+          # Replace the placeholders using awk instead of sed
+          awk -v list="$(cat $TEMP_LIST_FILE)" -v date="$TODAY_DATE" '{
+            gsub(/<!-- EXTENSION_LIST_PLACEHOLDER -->/, list);
+            gsub(/<!-- DATE_PLACEHOLDER -->/, date);
+            print;
+          }' index.html.new > index.html
+          
+          # Remove temporary files
+          rm index.html.new $TEMP_LIST_FILE
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
