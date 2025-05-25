@@ -94,18 +94,20 @@ jobs:
                 DESCRIPTION="No description available"
               fi
               
-              EXTENSION_LIST="${EXTENSION_LIST}
+              EXTENSION_ENTRY="
               <li>
                 <span class='project-name'>$NAME</span>
                 <p class='project-description'>$DESCRIPTION</p>
                 <a href='teeviapp:///extensions?install=$FULL_URL' target='_blank' rel='noopener noreferrer' class='install-btn'>Install Extension</a>
               </li>"
+              
+              EXTENSION_LIST="${EXTENSION_LIST}${EXTENSION_ENTRY}"
             fi
           done
 
           TODAY_DATE=$(date '+%d %B %Y')
-          sed -i "s|<!-- EXTENSION_LIST_PLACEHOLDER -->|$EXTENSION_LIST|g" index.html
-          sed -i "s|<!-- DATE_PLACEHOLDER -->|$TODAY_DATE|g" index.html
+          sed -i "s@<!-- EXTENSION_LIST_PLACEHOLDER -->@${EXTENSION_LIST}@g" index.html
+          sed -i "s@<!-- DATE_PLACEHOLDER -->@${TODAY_DATE}@g" index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
