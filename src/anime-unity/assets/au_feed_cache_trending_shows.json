@@ -1,0 +1,44 @@
+[
+  {
+    "title": "Il castello errante di Howl",
+    "kind": "movie",
+    "id": "336-il-castello-errante-di-howl-ita",
+    "posterURL": "https://image.tmdb.org/t/p/w780/fXKg3wkHfWoZEiJUZYxcrdPNWKi.jpg",
+    "backdropURL": "https://image.tmdb.org/t/p/w1280/tjMiLkVfOmbx3kUtKSmkLimiw8x.jpg",
+    "logoURL": "https://image.tmdb.org/t/p/w500/cOcqGC1mgPoRYvaUxPMACEKOKjz.png",
+    "overview": "Cosa farà Sophie e cosa capiterà tra lei e Howl?",
+    "releaseDate": "2005-06-10",
+    "genres": [
+      "Fantasy"
+    ],
+    "duration": 0
+  },
+  {
+    "title": "Nana",
+    "kind": "series",
+    "id": "4821-nana",
+    "posterURL": "https://image.tmdb.org/t/p/w780/eWqk7Hih3t2t1ZhiDbHFMZVJCrF.jpg",
+    "backdropURL": "https://image.tmdb.org/t/p/w1280/q3EV3IdRCdREZXIKLHAhoZufteg.jpg",
+    "logoURL": "https://image.tmdb.org/t/p/w500/u7OPSU24Ib5G8iYCswMYPrMUwp2.png",
+    "overview": "Due ventenni accomunate dal nome e dalla decisione di trasferirsi a Tokyo",
+    "releaseDate": "2006-04-05",
+    "genres": [
+      "Drama"
+    ],
+    "duration": 0
+  },
+  {
+    "title": "Jujutsu Kaisen",
+    "kind": "series",
+    "id": "2791-jujutsu-kaisen",
+    "posterURL": "https://image.tmdb.org/t/p/w780/g1p1Vx6FgUEY6fDRnOCncQ9V21o.jpg",
+    "backdropURL": "https://image.tmdb.org/t/p/w1280/prJcvQ5uRuqo2Um1loBbqoKoyBS.jpg",
+    "logoURL": "https://image.tmdb.org/t/p/w500/n0xjdQWNVVUCXyIEJjpUDqWDcw.png",
+    "overview": "A boy fights... for 'the right death'",
+    "releaseDate": "2020-10-03",
+    "genres": [
+      "Shounen"
+    ],
+    "duration": 0
+  }
+]
