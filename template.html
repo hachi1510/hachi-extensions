@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hachi's Extensions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet" />
+    <style>
+      :root {
+        --primary: #9333ea;
+        --primary-dark: #7e22ce;
+        --primary-light: #a855f7;
+        --text-main: #e2e8f0;
+        --text-secondary: #94a3b8;
+        --bg-card: #1e1b2d;
+        --bg-main: #0f0b19;
+        --border: #2d2a3c;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 24px;
+        line-height: 1.6;
+        color: var(--text-main);
+        background-color: var(--bg-main);
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--border);
+      }
+      h1 {
+        color: var(--primary-light);
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 16px;
+      }
+      .subtitle {
+        color: var(--text-secondary);
+        font-size: 18px;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      ul {
+        list-style-type: none;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+        gap: 20px;
+      }
+      li {
+        background-color: var(--bg-card);
+        padding: 24px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        height: 100%;
+      }
+      .project-name {
+        font-weight: 600;
+        color: var(--text-main);
+        font-size: 20px;
+        margin-bottom: 8px;
+      }
+      .project-description {
+        color: var(--text-secondary);
+        font-size: 15px;
+        margin-bottom: 24px;
+        flex-grow: 1;
+      }
+      .install-btn {
+        background: var(--primary);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 16px;
+        text-align: center;
+        transition: background 0.2s ease;
+        white-space: nowrap;
+        border: none;
+        cursor: pointer;
+        margin-top: auto;
+      }
+      .install-btn:hover {
+        background: var(--primary-dark);
+        box-shadow: 0 4px 12px rgba(126, 34, 206, 0.4);
+      }
+      footer {
+        margin-top: 60px;
+        text-align: center;
+        color: var(--text-secondary);
+        font-size: 14px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+      }
+      @media (max-width: 768px) {
+        ul {
+          grid-template-columns: 1fr;
+        }
+        body {
+          padding: 16px;
+        }
+        h1 {
+          font-size: 28px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Hachi's Extensions</h1>
+      <p class="subtitle">
+        Enhance your Teevi experience with these custom extensions. Click the
+        install button to add them directly to your app.
+      </p>
+    </div>
+    <ul>
+      <!-- EXTENSION_LIST_PLACEHOLDER -->
+    </ul>
+    <footer>
+      Made with 💜 by Hachi 🐈‍⬛. Last updated:
+      <!-- DATE_PLACEHOLDER -->
+    </footer>
+  </body>
+</html>

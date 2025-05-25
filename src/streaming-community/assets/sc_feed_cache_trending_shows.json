@@ -1,0 +1,128 @@
+[
+  {
+    "kind": "movie",
+    "id": "11527-flow",
+    "title": "Flow",
+    "posterURL": "https://image.tmdb.org/t/p/w780/sS71Tn4IFAuiKkpXKqs9w7gaq4x.jpg",
+    "backdropURL": "https://image.tmdb.org/t/p/w1280/id17sSzMcV2q0wDEFiILj4iP5RX.jpg",
+    "logoURL": "https://image.tmdb.org/t/p/w500/vlFyxv76qifbH2ApYBnrjKxCYSe.png",
+    "overview": "Condividete la bellezza dello stare insieme",
+    "releaseDate": "2024-11-22",
+    "genres": [
+      "Animazione"
+    ],
+    "duration": 0
+  },
+  {
+    "kind": "movie",
+    "id": "11473-anora",
+    "title": "Anora",
+    "posterURL": "https://image.tmdb.org/t/p/w780/aqXHtuq9Ns6dqxwNUTkas9PsvdI.jpg",
+    "backdropURL": "https://image.tmdb.org/t/p/w1280/kEYWal656zP5Q2Tohm91aw6orlT.jpg",
+    "logoURL": "https://image.tmdb.org/t/p/w500/dYVsBFfGLSCAZ9HqwOfkpgWUwTw.png",
+    "overview": "Love is a hustle",
+    "releaseDate": "2024-10-18",
+    "genres": [
+      "Dramma"
+    ],
+    "duration": 0
+  },
+  {
+    "kind": "movie",
+    "id": "391-spider-man-un-nuovo-universo",
+    "title": "Spider-Man - Un nuovo universo",
+    "posterURL": "https://image.tmdb.org/t/p/w780/2HmMlcQmPepzRx2xcJLM1yw4D0w.jpg",
+    "backdropURL": "https://image.tmdb.org/t/p/w1280/8mnXR9rey5uQ08rZAvzojKWbDQS.jpg",
+    "logoURL": "https://image.tmdb.org/t/p/w500/hOSJGmh7FET9PdjlIuVTUUbi51S.png",
+    "overview": "More than one wears the mask",
+    "releaseDate": "2018-12-14",
+    "genres": [
+      "Animation"
+    ],
+    "duration": 0
+  },
+  {
+    "kind": "movie",
+    "id": "3441-casino-royale",
+    "title": "Casino Royale",
+    "posterURL": "https://image.tmdb.org/t/p/w780/u5Hk3FSdRtbN59YsqBY3XpYmhhJ.jpg",
+    "backdropURL": "https://image.tmdb.org/t/p/w1280/6vt7uXxyhMp1sk56UX7eaH1w8g2.jpg",
+    "logoURL": "https://image.tmdb.org/t/p/w500/e0DBt4YpJFiEjghZF5GcQ92Mo5e.png",
+    "overview": "Everyone has a past. Every legend has a beginning",
+    "releaseDate": "2006-11-17",
+    "genres": [
+      "Thriller"
+    ],
+    "duration": 0
+  },
+  {
+    "kind": "series",
+    "id": "4835-slow-horses",
+    "title": "Slow Horses",
+    "posterURL": "https://image.tmdb.org/t/p/w780/s6n49WngI07RplpzwFW3gHpVxuR.jpg",
+    "backdropURL": "https://image.tmdb.org/t/p/w1280/qhXdYysiamRu6moMGMZPQ4oVLvd.jpg",
+    "logoURL": "https://image.tmdb.org/t/p/w500/c1Gcf12DFh4cEMShrYAjcu32GX4.png",
+    "overview": "Non si scappa dalle ombre del passato",
+    "releaseDate": "2022-04-01",
+    "genres": [
+      "Crime"
+    ],
+    "duration": 0
+  },
+  {
+    "kind": "series",
+    "id": "11520-daredevil-rinascita",
+    "title": "Daredevil: Rinascita",
+    "posterURL": "https://image.tmdb.org/t/p/w780/qXxqIIr3ip12MTOtRw9XWEHvfj6.jpg",
+    "backdropURL": "https://image.tmdb.org/t/p/w1280/hrsRczdsAHBLTDzlIqt82bxY0Tt.jpg",
+    "logoURL": "https://image.tmdb.org/t/p/w500/npN4ppBzR1SULVA0aAwHiKzm8VZ.png",
+    "overview": "La missione di Daredevil non ha mai fine",
+    "releaseDate": "2025-03-04",
+    "genres": [
+      "Dramma"
+    ],
+    "duration": 0
+  },
+  {
+    "kind": "series",
+    "id": "4937-scissione",
+    "title": "Scissione",
+    "posterURL": "https://image.tmdb.org/t/p/w780/rDFpBfO70Z8UyXDvmXeGy486NLm.jpg",
+    "backdropURL": "https://image.tmdb.org/t/p/w1280/ixgFmf1X59PUZam2qbAfskx2gQr.jpg",
+    "logoURL": "https://image.tmdb.org/t/p/w500/so5Bn3opFgPUhVwDHffcqmeaZwD.png",
+    "overview": "There's more to work than life",
+    "releaseDate": "2022-02-17",
+    "genres": [
+      "Dramma"
+    ],
+    "duration": 0
+  },
+  {
+    "kind": "series",
+    "id": "2098-doctor-who",
+    "title": "Doctor Who",
+    "posterURL": "https://image.tmdb.org/t/p/w780/6ecjWh9uUUnsOLzCWIukHVLWnRH.jpg",
+    "backdropURL": "https://image.tmdb.org/t/p/w1280/9mWQltOeRimE8LSZm3cRcQkqrj2.jpg",
+    "logoURL": "https://image.tmdb.org/t/p/w500/8i8Zsy0IkaHkxNjOdPRowhy85hi.png",
+    "overview": "The Doctor is a Time Lord: a 900 year old alien with 2 hearts, part of a gifted civilization who mastered time travel",
+    "releaseDate": "2005-03-26",
+    "genres": [
+      "Sci-Fi & Fantasy"
+    ],
+    "duration": 0
+  },
+  {
+    "kind": "series",
+    "id": "7874-shogun",
+    "title": "Shōgun",
+    "posterURL": "https://image.tmdb.org/t/p/w780/23wScEz9Tr5N1cE58K9FAtN00y4.jpg",
+    "backdropURL": "https://image.tmdb.org/t/p/w1280/qauHZuVYmpbjw456y3BHcmZy8nO.jpg",
+    "logoURL": "https://image.tmdb.org/t/p/w500/zjKGNDF2Kr6RQvONfiM0t2tm92T.png",
+    "overview": "An epic saga of war, passion, and power set in Feudal Japan",
+    "releaseDate": "2024-02-27",
+    "genres": [
+      "War & Politics"
+    ],
+    "duration": 0
+  }
+]
