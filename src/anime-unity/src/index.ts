@@ -190,7 +190,12 @@ async function fetchShow(id: string): Promise<TeeviShow> {
   if (show.mal_id) {
     try {
       const malShow = await fetchJikanShow(show.mal_id)
-      posterURL = malShow.images?.jpg?.large_image_url || posterURL
+      if (
+        malShow.images?.jpg?.large_image_url &&
+        malShow.images.jpg.large_image_url.trim()
+      ) {
+        posterURL = malShow.images.jpg.large_image_url
+      }
       rating = malShow.score || rating
     } catch (error) {
       console.error(`Failed to fetch data from Jikan: ${error}`)
@@ -201,7 +206,9 @@ async function fetchShow(id: string): Promise<TeeviShow> {
   if (show.anilist_id) {
     try {
       const aniShow = await fetchAnilistShow(show.anilist_id)
-      backdropURL = aniShow.bannerImage || backdropURL
+      if (aniShow.bannerImage && aniShow.bannerImage.trim()) {
+        backdropURL = aniShow.bannerImage
+      }
     } catch (error) {
       console.error(`Failed to fetch data from Anilist: ${error}`)
     }
@@ -211,7 +218,12 @@ async function fetchShow(id: string): Promise<TeeviShow> {
   if (show.mal_id) {
     try {
       const kitsuShow = await fetchKitsuShow({ mal: show.mal_id })
-      backdropURL = kitsuShow.coverImage?.original || backdropURL
+      if (
+        kitsuShow.coverImage?.original &&
+        kitsuShow.coverImage.original.trim()
+      ) {
+        backdropURL = kitsuShow.coverImage.original
+      }
     } catch (error) {
       console.error(`Failed to fetch data from Kitsu: ${error}`)
     }
