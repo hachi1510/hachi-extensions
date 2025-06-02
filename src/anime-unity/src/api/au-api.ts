@@ -120,11 +120,16 @@ export async function fetchAUShow(
   }
 }
 
-export async function fetchAUShowEpisodes(
-  show_id: number,
-  start: number = 1,
-  limit: number = 100
-): Promise<AUShowEpisode[]> {
+export async function fetchAUShowEpisodes(options: {
+  show_id: number
+  // start and limit are 1-based indices, start is inclusive, limit is the number of episodes to fetch
+  start?: number
+  limit?: number
+}): Promise<AUShowEpisode[]> {
+  const show_id = options.show_id
+  const start = options.start || 1
+  const limit = options.limit || 100
+
   const endpoint = new URL(`info_api/${show_id}/1`, API_URL)
   endpoint.searchParams.append("start_range", start.toString())
   endpoint.searchParams.append("end_range", (start + limit - 1).toString())

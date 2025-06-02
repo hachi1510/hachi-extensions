@@ -59,6 +59,7 @@ function mapShowToEntry(auShow: AUShow): TeeviShowEntry {
     title: auShow.title_eng,
     posterURL: auShow.imageurl,
     year: Number(auShow.date),
+    language: parseShowLanguage(auShow.title_eng),
   }
 }
 
@@ -87,6 +88,87 @@ function parseShowRating(score: string | number | undefined): number {
   const parsedScore = typeof score === "string" ? parseFloat(score) : score
 
   return isNaN(parsedScore) ? 0 : parsedScore
+}
+
+/**
+ * Parses language information from show title
+ * Checks if title contains "ITA" to determine if it's in Italian
+ * Returns ISO 639-1 two-character language code
+ */
+function parseShowLanguage(title: string): string {
+  return title.toUpperCase().includes("ITA") ? "it" : "ja"
+}
+
+/**
+ * Creates seasons array based on episode count
+ */
+function createSeasons(episodesCount: number = 0): TeeviShowSeason[] {
+  const numberOfGroups = Math.ceil(episodesCount / EPISODES_PER_SEASON)
+
+  return Array.from({ length: numberOfGroups }, (_, idx) => {
+    const start = idx * EPISODES_PER_SEASON + 1
+    const rawEnd = (idx + 1) * EPISODES_PER_SEASON
+    const end = Math.min(rawEnd, episodesCount)
+
+    return {
+      number: idx,
+      name: `${start}-${end}`,
+    }
+  })
+}
+
+/**
+ * Helper function to fetch combined episode info (titles, filler flag and thumbnails)
+ */
+async function fetchEpisodeMetadata(options: {
+  malId?: number
+  anilistId?: number
+  season: number
+}): Promise<{
+  titles: Record<number, string>
+  thumbnails: Record<number, string>
+  fillers: Record<number, boolean>
+}> {
+  const { malId, anilistId, season } = options
+
+  const titles: Record<number, string> = {}
+  const thumbnails: Record<number, string> = {}
+  const fillers: Record<number, boolean> = {}
+
+  // Fetch episode titles and filler information from MyAnimeList if ID is available
+  if (malId) {
+    try {
+      const malEpisodes = await fetchJikanShowEpisodes(
+        malId,
+        season ? season + 1 : 1
+      )
+      malEpisodes.forEach((ep) => {
+        titles[ep.mal_id] = ep.title || `Episode ${ep.mal_id}`
+        // Add filler information if available
+        if (ep.filler !== undefined) {
+          fillers[ep.mal_id] = ep.filler
+        }
+      })
+    } catch (error) {
+      console.error(`Failed to fetch episode data from Jikan: ${error}`)
+    }
+  }
+
+  // Fetch episode thumbnails from AniList if ID is available
+  if (anilistId) {
+    try {
+      const aniEpisodes = await fetchAnilistShowEpisodes(anilistId)
+      aniEpisodes.forEach((ep) => {
+        if (ep.number && ep.thumbnail) {
+          thumbnails[ep.number] = ep.thumbnail
+        }
+      })
+    } catch (error) {
+      console.error(`Failed to fetch episode thumbnails from Anilist: ${error}`)
+    }
+  }
+
+  return { titles, thumbnails, fillers }
 }
 
 async function fetchShowsByQuery(query: string): Promise<TeeviShowEntry[]> {
@@ -154,25 +236,8 @@ async function fetchShow(id: string): Promise<TeeviShow> {
     relatedShows: show.related?.map((relatedShow) =>
       mapShowToEntry(relatedShow)
     ),
+    language: parseShowLanguage(show.title_eng),
   }
-}
-
-/**
- * Creates seasons array based on episode count
- */
-function createSeasons(episodesCount: number = 0): TeeviShowSeason[] {
-  const numberOfGroups = Math.ceil(episodesCount / EPISODES_PER_SEASON)
-
-  return Array.from({ length: numberOfGroups }, (_, idx) => {
-    const start = idx * EPISODES_PER_SEASON + 1
-    const rawEnd = (idx + 1) * EPISODES_PER_SEASON
-    const end = Math.min(rawEnd, episodesCount)
-
-    return {
-      number: idx,
-      name: `${start}-${end}`,
-    }
-  })
 }
 
 async function fetchEpisodes(
@@ -180,83 +245,42 @@ async function fetchEpisodes(
   season: number
 ): Promise<TeeviShowEpisode[]> {
   const numericId = Number(id.split("-")[0])
+  if (isNaN(numericId)) {
+    throw new Error("Invalid show ID format")
+  }
+
   const show = await fetchAUShow(id)
 
-  // Calculate episode range for the requested season
-  const startEpisode = season * EPISODES_PER_SEASON + 1
-
-  const seasonEpisodes = await fetchAUShowEpisodes(
-    numericId,
-    startEpisode,
-    EPISODES_PER_SEASON
-  )
+  const seasonEpisodes = await fetchAUShowEpisodes({
+    show_id: numericId,
+    start: season * EPISODES_PER_SEASON + 1,
+    limit: EPISODES_PER_SEASON,
+  })
 
   if (seasonEpisodes.length === 0) {
     return []
   }
 
   // Fetch additional episode metadata
-  const [titleByNumbers, thumbnailByNumbers] = await Promise.all([
-    fetchEpisodeTitles(show.mal_id, season),
-    fetchEpisodeThumbnails(show.anilist_id),
-  ])
+  const { titles, thumbnails, fillers } = await fetchEpisodeMetadata({
+    malId: show.mal_id,
+    anilistId: show.anilist_id,
+    season: season,
+  })
 
   return seasonEpisodes.map((episode) => {
-    const number = Number(episode.number)
+    // Parse episode number - handle both single numbers and ranges (e.g. "135-136")
+    const number = episode.number.includes("-")
+      ? Number(episode.number.split("-")[0]) // Take first number from range
+      : Number(episode.number)
     return {
       id: `${id}/${episode.id}`,
       number: number,
-      title: titleByNumbers[number],
-      thumbnailURL: thumbnailByNumbers[number],
+      title: titles[number],
+      thumbnailURL: thumbnails[number],
+      isFiller: fillers[number] || false,
     }
   })
-}
-
-/**
- * Helper function to fetch episode titles from MyAnimeList
- */
-async function fetchEpisodeTitles(
-  malId?: number,
-  season?: number
-): Promise<Record<number, string>> {
-  if (!malId) return {}
-
-  try {
-    const malEpisodes = await fetchJikanShowEpisodes(
-      malId,
-      season ? season + 1 : 1
-    )
-    return malEpisodes.reduce<Record<number, string>>((dict, ep) => {
-      dict[ep.mal_id] = ep.title
-      return dict
-    }, {})
-  } catch (error) {
-    console.error(`Failed to fetch episode titles from Jikan: ${error}`)
-    return {}
-  }
-}
-
-/**
- * Helper function to fetch episode thumbnails from AniList
- */
-async function fetchEpisodeThumbnails(
-  anilistId?: number
-): Promise<Record<number, string | undefined>> {
-  if (!anilistId) return {}
-
-  try {
-    const aniEpisodes = await fetchAnilistShowEpisodes(anilistId)
-    return aniEpisodes.reduce<Record<number, string | undefined>>(
-      (dict, ep) => {
-        dict[ep.number] = ep.thumbnail
-        return dict
-      },
-      {}
-    )
-  } catch (error) {
-    console.error(`Failed to fetch episode thumbnails from Anilist: ${error}`)
-    return {}
-  }
 }
 
 async function fetchVideoAssets(id: string): Promise<TeeviVideoAsset[]> {
@@ -285,7 +309,11 @@ async function extractMediaId(id: string): Promise<number | undefined> {
 
   // Movie ID format: "showId-slug"
   const showId = Number(parts[0].split("-")[0])
-  const episodes = await fetchAUShowEpisodes(showId, 1, 1)
+  const episodes = await fetchAUShowEpisodes({
+    show_id: showId,
+    start: 1,
+    limit: 1,
+  })
 
   if (episodes.length > 0) {
     return Number(episodes[0].id)

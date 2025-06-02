@@ -30,6 +30,7 @@ function mapSCShowEntryToTeeviShowEntry(show: SCShowEntry): TeeviShowEntry {
     title: show.name,
     posterURL: scFindImageURL(show.images, "poster"),
     year: new Date(show.last_air_date).getFullYear(),
+    language: "it",
   } satisfies TeeviShowEntry
 }
 
@@ -120,6 +121,7 @@ async function fetchShow(id: string): Promise<TeeviShow> {
     relatedShows: show.related?.map((relatedShow) =>
       mapSCShowEntryToTeeviShowEntry(relatedShow)
     ),
+    language: "it",
   }
 }
 

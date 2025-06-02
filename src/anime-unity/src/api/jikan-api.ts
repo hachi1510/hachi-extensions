@@ -47,6 +47,7 @@ export type JikanShow = {
 export type JikanShowEpisode = {
   mal_id: number
   title: string
+  filler?: boolean
 }
 
 export async function fetchJikanShow(id: number): Promise<JikanShow> {

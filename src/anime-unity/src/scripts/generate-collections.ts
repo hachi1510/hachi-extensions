@@ -83,6 +83,7 @@ function makeCollection(name: string, shows: AUShow[]): TeeviFeedCollection {
       title: show.title_eng,
       posterURL: show.imageurl,
       year: Number(show.date),
+      language: show.title_eng.toUpperCase().includes("ITA") ? "it" : "ja",
     })),
   }
 }
