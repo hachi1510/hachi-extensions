@@ -56,7 +56,7 @@ function mapShowToEntry(auShow: AUShow): TeeviShowEntry {
   return {
     kind: auShow.type == "Movie" ? "movie" : "series",
     id: `${auShow.id}-${auShow.slug}`,
-    title: auShow.title_eng,
+    title: sanitizeTitle(auShow.title_eng),
     posterURL: auShow.imageurl,
     year: Number(auShow.date),
     language: parseShowLanguage(auShow.title_eng),
@@ -92,11 +92,16 @@ function parseShowRating(score: string | number | undefined): number {
 
 /**
  * Parses language information from show title
- * Checks if title contains "ITA" to determine if it's in Italian
+ * Checks if title contains "(ITA)" to determine if it's in Italian
  * Returns ISO 639-1 two-character language code
  */
 function parseShowLanguage(title: string): string {
-  return title.toUpperCase().includes("ITA") ? "it" : "ja"
+  return title.toUpperCase().includes("(ITA)") ? "it" : "ja"
+}
+
+function sanitizeTitle(title: string): string {
+  // Remove "(ITA)" or similar tags from the title
+  return title.replace(/\s*\(ITA\)\s*/gi, "").trim()
 }
 
 /**
@@ -190,12 +195,7 @@ async function fetchShow(id: string): Promise<TeeviShow> {
   if (show.mal_id) {
     try {
       const malShow = await fetchJikanShow(show.mal_id)
-      if (
-        malShow.images?.jpg?.large_image_url &&
-        malShow.images.jpg.large_image_url.trim()
-      ) {
-        posterURL = malShow.images.jpg.large_image_url
-      }
+      posterURL = malShow.images?.jpg?.large_image_url || posterURL
       rating = malShow.score || rating
     } catch (error) {
       console.error(`Failed to fetch data from Jikan: ${error}`)
@@ -206,9 +206,7 @@ async function fetchShow(id: string): Promise<TeeviShow> {
   if (show.anilist_id) {
     try {
       const aniShow = await fetchAnilistShow(show.anilist_id)
-      if (aniShow.bannerImage && aniShow.bannerImage.trim()) {
-        backdropURL = aniShow.bannerImage
-      }
+      backdropURL = aniShow.bannerImage || backdropURL
     } catch (error) {
       console.error(`Failed to fetch data from Anilist: ${error}`)
     }
@@ -218,12 +216,7 @@ async function fetchShow(id: string): Promise<TeeviShow> {
   if (show.mal_id) {
     try {
       const kitsuShow = await fetchKitsuShow({ mal: show.mal_id })
-      if (
-        kitsuShow.coverImage?.original &&
-        kitsuShow.coverImage.original.trim()
-      ) {
-        backdropURL = kitsuShow.coverImage.original
-      }
+      backdropURL = kitsuShow.coverImage?.original || backdropURL
     } catch (error) {
       console.error(`Failed to fetch data from Kitsu: ${error}`)
     }
@@ -235,14 +228,14 @@ async function fetchShow(id: string): Promise<TeeviShow> {
   return {
     id,
     kind: isSeries ? "series" : "movie",
-    title: show.title_eng,
+    title: sanitizeTitle(show.title_eng),
     overview: overview,
     genres: show.genres?.map((g) => g.name) || [],
     duration: (show.episodes_length || 0) * 60,
     releaseDate: createDateFromSeason(Number(show.date), show.season),
     seasons: seasons,
-    posterURL: posterURL,
-    backdropURL: backdropURL,
+    posterURL: posterURL && posterURL.trim() ? posterURL : undefined,
+    backdropURL: backdropURL && backdropURL.trim() ? backdropURL : undefined,
     rating: rating,
     status: mapStatus(show.status),
     relatedShows: show.related?.map((relatedShow) =>
