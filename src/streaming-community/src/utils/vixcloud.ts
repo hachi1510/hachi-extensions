@@ -16,7 +16,8 @@ export async function fetchVixcloudPlaylist(
   const paramsMatch = scripts.match(/params\s*:\s*\{([^}]*)\}/)?.[1]
   if (!paramsMatch) throw new Error("Playlist not found")
 
-  const playlistURL = new URL(`https://vixcloud.co/playlist/${id}`)
+  //const playlistURL = new URL(`https://vixcloud.co/playlist/${id}`)
+  const playlistURL = getPlaylistBaseURL(id, scripts)
 
   // Use regex to match all key-value pairs in the 'params' block
   const params = paramsMatch.matchAll(/'(\w+)'\s*:\s*'([^']+)'/g)
@@ -41,4 +42,37 @@ export async function fetchVixcloudPlaylist(
   }
 
   return { url: playlistURL.toString(), headers }
+}
+
+function getPlaylistBaseURL(id: string, script: string): URL {
+  const playlistURL = new URL(`https://vixcloud.co/playlist/${id}`)
+  try {
+    let activeStream = findActiveStream(script)
+    if (activeStream) {
+      return new URL(activeStream)
+    } else {
+      // If no active stream found, return the base playlist URL
+      return playlistURL
+    }
+  } catch {
+    return playlistURL
+  }
+}
+
+function findActiveStream(script: string): string | null {
+  // Extract the JSON array assigned to window.streams
+  const match = script.match(/window\.streams\s*=\s*(\[[^\]]+\])/)
+  if (!match) {
+    throw new Error("Streams not found in script")
+  }
+
+  try {
+    const streams = JSON.parse(match[1])
+    const activeStream = streams.find((stream: { active: any }) =>
+      Boolean(stream.active)
+    )
+    return activeStream?.url || null
+  } catch (error) {
+    throw new Error("Failed to parse streams JSON: " + error)
+  }
 }
