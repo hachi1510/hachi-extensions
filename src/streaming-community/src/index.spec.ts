@@ -36,8 +36,18 @@ test("fetchEpisodes", async () => {
   expect(episodes[0]).toHaveProperty("title")
 })
 
-test("fetchVideoAssets", async () => {
-  const videoAssets = await extension.fetchVideoAssets("835")
-  expect(videoAssets).toHaveLength(1)
-  expect(videoAssets[0].url).toContain("vixcloud.co")
+describe("fetchVideoAssets", () => {
+  it.each(["835", "12405", "12264?episode_id=90021"])(
+    "should return asset for ID %s",
+    async (id) => {
+      const videoAssets = await extension.fetchVideoAssets(id)
+      expect(videoAssets).toHaveLength(1)
+      expect(videoAssets[0].url).toContain("vixcloud.co")
+      expect(videoAssets[0].headers).toHaveProperty("Referer")
+      const response = await fetch(videoAssets[0].url, {
+        headers: videoAssets[0].headers,
+      })
+      expect(response.ok).toBeTruthy()
+    }
+  )
 })
