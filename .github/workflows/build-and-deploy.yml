@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "*/package.json"
+      - "**/package.json"
       - ".github/workflows/build-and-deploy.yml"
       - "template.html"
 
@@ -77,7 +77,7 @@ jobs:
           # Create a temporary file for the extension list
           TEMP_LIST_FILE=$(mktemp)
           TODAY_DATE=$(date '+%d %B %Y')
-          
+
           # Generate extension list in a separate file
           cd build-output
           for dir in */; do
@@ -103,17 +103,17 @@ jobs:
               echo "              </li>" >> $TEMP_LIST_FILE
             fi
           done
-          
+
           # Read the template file
           cat $GITHUB_WORKSPACE/template.html > index.html.new
-          
+
           # Replace the placeholders using awk instead of sed
           awk -v list="$(cat $TEMP_LIST_FILE)" -v date="$TODAY_DATE" '{
             gsub(/<!-- EXTENSION_LIST_PLACEHOLDER -->/, list);
             gsub(/<!-- DATE_PLACEHOLDER -->/, date);
             print;
           }' index.html.new > index.html
-          
+
           # Remove temporary files
           rm index.html.new $TEMP_LIST_FILE
 

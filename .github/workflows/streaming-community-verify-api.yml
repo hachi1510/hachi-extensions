@@ -1,4 +1,4 @@
-name: Verify API URL
+name: SC - Verify API
 
 on:
   schedule:
@@ -53,10 +53,10 @@ jobs:
             git config --local user.email "github-actions[bot]@users.noreply.github.com"
             git config --local user.name "github-actions[bot]"
             
-            # Increment minor version
-            echo "Incrementing minor version..."
+            # Increment patch version
+            echo "Incrementing patch version..."
             cd src/streaming-community
-            npm version minor -m "Bump version to %s due to API URL change"
+            npm version patch -m "Bump version to %s due to API URL change"
             cd ../..
             
             # Commit and push changes
