@@ -40,11 +40,18 @@ jobs:
           if [[ "$HTTP_STATUS" == "301" || "$HTTP_STATUS" == "302" || "$HTTP_STATUS" == "307" || "$HTTP_STATUS" == "308" ]]; then
             # There's a redirect, get the new URL
             NEW_API_URL=$(curl -s -I "$API_URL" | grep -i "location:" | sed 's/location: //i' | tr -d '\r')
+            echo "Raw redirect URL: $NEW_API_URL"
+            
+            # Remove language-specific endings like /en or /it
+            NEW_API_URL=$(echo $NEW_API_URL | sed -E 's|/(en|it)/?$||')
+            echo "URL after language removal: $NEW_API_URL"
             
             # Make sure new URL has trailing slash if needed
             if [[ ! "$NEW_API_URL" =~ /$ ]]; then
               NEW_API_URL="${NEW_API_URL}/"
             fi
+            
+            echo "Final URL to use: $NEW_API_URL"
             
             # Update .env file
             sed -i "s|VITE_SC_API_URL=.*|VITE_SC_API_URL=$NEW_API_URL|g" src/streaming-community/.env
