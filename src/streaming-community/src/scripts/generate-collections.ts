@@ -4,7 +4,11 @@ import {
   SCArchiveRequest,
   SCGenres,
 } from "../api/sc-api"
-import { TeeviFeedCollection, TeeviShowEntry } from "@teeviapp/core"
+import {
+  TeeviFeedCategory,
+  TeeviFeedCollection,
+  TeeviShowEntry,
+} from "@teeviapp/core"
 import { writeFile, mkdir } from "fs/promises"
 import { dirname } from "path"
 
@@ -17,6 +21,7 @@ type CollectionRequest = {
   minimumViews?: SCArchiveRequest["minimumViews"]
   sorting?: SCArchiveRequest["sorting"]
   maximumElements?: number
+  category?: TeeviFeedCategory
   //maximumPagesToFetch?: SCArchiveRequest["maximumPagesToFetch"]
 }
 
@@ -102,6 +107,7 @@ const requests: CollectionRequest[] = [
     sorting: "release_date",
     minimumViews: "25k",
     maximumElements: 20,
+    category: "new",
     //maximumPagesToFetch: 1,
   },
   {
@@ -111,6 +117,7 @@ const requests: CollectionRequest[] = [
     sorting: "release_date",
     minimumViews: "25k",
     maximumElements: 20,
+    category: "new",
     //maximumPagesToFetch: 1,
   },
   {
@@ -120,6 +127,7 @@ const requests: CollectionRequest[] = [
     sorting: "release_date",
     minimumViews: "25k",
     maximumElements: 20,
+    category: "new",
     //maximumPagesToFetch: 1,
   },
   {
@@ -129,6 +137,7 @@ const requests: CollectionRequest[] = [
     sorting: "release_date",
     minimumViews: "25k",
     maximumElements: 20,
+    category: "new",
     //maximumPagesToFetch: 1,
   },
   {
@@ -138,6 +147,7 @@ const requests: CollectionRequest[] = [
     sorting: "release_date",
     minimumViews: "25k",
     maximumElements: 20,
+    category: "new",
     //maximumPagesToFetch: 1,
   },
   {
@@ -169,11 +179,13 @@ const requests: CollectionRequest[] = [
     type: "tv",
     minimumViews: "1M",
     name: "Serie da record",
+    category: "hot",
   },
   {
     type: "movie",
     minimumViews: "500k",
     name: "Film da record",
+    category: "hot",
   },
 ]
 
@@ -223,6 +235,7 @@ async function fetchCollection(
   const collection = {
     name: request.name,
     id: `sc-${request.type}-${request.name.toLowerCase().replace(/\s/g, "-")}`,
+    category: request.category,
     shows: shows.map((show) => {
       return {
         kind: show.type == "movie" ? "movie" : "series",

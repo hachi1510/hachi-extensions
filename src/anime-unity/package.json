@@ -1,6 +1,6 @@
 {
   "name": "yakan.animeunity",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Estensione per Teevi che abilita l'integrazione con AnimeUnity",
   "author": "Hachi",
   "private": true,
@@ -15,11 +15,11 @@
     "generate-trends": "npx vite-node src/scripts/generate-trends.ts"
   },
   "dependencies": {
-    "@teeviapp/core": "^0.8.0",
+    "@teeviapp/core": "^0.9.6",
     "cheerio": "^1.0.0"
   },
   "devDependencies": {
-    "@teeviapp/vite": "^0.8.0",
+    "@teeviapp/vite": "^0.9.6",
     "@types/node": "^22.13.13",
     "vite": "^6.1.0",
     "vite-node": "^3.0.9",

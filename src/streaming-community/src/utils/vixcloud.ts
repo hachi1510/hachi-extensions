@@ -29,7 +29,11 @@ export async function fetchVixcloudPlaylist(
   if (url.searchParams.has("b") && url.searchParams.get("b") === "1") {
     playlistURL.searchParams.append("b", "1")
   }
-  if (url.searchParams.has("canPlayFHD")) {
+
+  if (
+    url.searchParams.has("canPlayFHD") ||
+    /window\.canPlayFHD\s*=\s*true/.test(scripts)
+  ) {
     playlistURL.searchParams.append("h", "1")
   }
 

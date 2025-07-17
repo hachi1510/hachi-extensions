@@ -1,4 +1,4 @@
-import { TeeviFeedCollection } from "@teeviapp/core"
+import { TeeviFeedCategory, TeeviFeedCollection } from "@teeviapp/core"
 import { writeFile, mkdir } from "fs/promises"
 import { dirname } from "path"
 import { AUShow, AUShowType, fetchAUShowsFromArchive } from "../api/au-api"
@@ -15,6 +15,7 @@ async function generateCollections() {
     name: string
     options: { orderBy?: "views" | "popularity"; type?: AUShowType }
     dub: boolean
+    category?: TeeviFeedCategory
   }[] = [
     {
       name: "Gli anime più visti",
@@ -30,6 +31,7 @@ async function generateCollections() {
       name: "Anime del momento",
       options: { orderBy: "popularity" },
       dub: false,
+      category: "hot",
     },
     {
       name: "I film anime più apprezzati",
@@ -53,13 +55,13 @@ async function generateCollections() {
     },
   ]
 
-  for (const { name, options, dub } of collectionConfigs) {
+  for (const { name, options, dub, category } of collectionConfigs) {
     const showsPage1 = await fetchAUShowsFromArchive(1, options)
     const showsPage2 = await fetchAUShowsFromArchive(2, options)
     const shows = [...showsPage1, ...showsPage2].filter((show) =>
       dub ? show.dub == 1 : show.dub != 1
     )
-    collections.push(makeCollection(name, shows))
+    collections.push(makeCollection(name, shows, category))
     await delayBetweenRequests()
   }
 
@@ -72,11 +74,16 @@ async function delayBetweenRequests() {
   await new Promise((resolve) => setTimeout(resolve, delay))
 }
 
-function makeCollection(name: string, shows: AUShow[]): TeeviFeedCollection {
+function makeCollection(
+  name: string,
+  shows: AUShow[],
+  category?: TeeviFeedCategory
+): TeeviFeedCollection {
   console.log(`Generating collection: ${name} (${shows.length} shows)`)
   return {
     name: name,
     id: `au-${name.toLowerCase().replace(/\s/g, "-")}`,
+    category: category,
     shows: shows.map((show) => ({
       kind: show.type == "Movie" ? "movie" : "series",
       id: `${show.id}-${show.slug}`,
