@@ -42,19 +42,17 @@ jobs:
             NEW_API_URL=$(curl -s -I "$API_URL" | grep -i "location:" | sed 's/location: //i' | tr -d '\r')
             echo "Raw redirect URL: $NEW_API_URL"
             
-            # Remove language-specific endings like /en or /it
-            NEW_API_URL=$(echo $NEW_API_URL | sed -E 's|/(en|it)/?$||')
-            echo "URL after language removal: $NEW_API_URL"
+            # Extract only the base URL (protocol + domain) without any path
+            NEW_API_URL=$(echo "$NEW_API_URL" | sed 's#^\(https\?://[^/]*\).*#\1#')
+            echo "Base URL extracted: $NEW_API_URL"
             
-            # Make sure new URL has trailing slash if needed
-            if [[ ! "$NEW_API_URL" =~ /$ ]]; then
-              NEW_API_URL="${NEW_API_URL}/"
-            fi
+            # Add trailing slash
+            NEW_API_URL="${NEW_API_URL}/"
             
             echo "Final URL to use: $NEW_API_URL"
             
             # Update .env file
-            sed -i "s|VITE_SC_API_URL=.*|VITE_SC_API_URL=$NEW_API_URL|g" src/streaming-community/.env
+            sed -i "s#VITE_SC_API_URL=.*#VITE_SC_API_URL=$NEW_API_URL#g" src/streaming-community/.env
             
             # Configure Git
             git config --local user.email "github-actions[bot]@users.noreply.github.com"
