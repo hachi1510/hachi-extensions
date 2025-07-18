@@ -20,6 +20,7 @@ import {
 } from "./api/sc-api"
 import { fetchShow as imdbFetchShow } from "./api/imdb-api"
 import { fetchShow as mazeFetchShow } from "./api/tvmaze-api"
+import { fetchShow as tmdbFetchShow } from "./api/tmdb-api"
 import collections from "../assets/sc_feed_cache_collections.json"
 import trendingShows from "../assets/sc_feed_cache_trending_shows.json"
 
@@ -68,35 +69,75 @@ async function fetchShow(id: string): Promise<TeeviShow> {
   const isSeries = show.type !== "movie"
 
   let posterURL = scFindImageURL(show.images, "poster")
+  let backdropURL =
+    scFindImageURL(show.images, "background") ||
+    scFindImageURL(show.images, "cover_mobile") ||
+    scFindImageURL(show.images, "cover")
+  let logoURL = scFindImageURL(show.images, "logo")
+
   let overview = show.plot
   let rating =
     typeof show.score === "string" ? parseFloat(show.score) : show.score
 
-  // Fetch additional data from IMDB or TVMaze
+  // Fetch additional data from TMDB, IMDB or TVMaze
+  let tmdbShow = null
+  let imdbShow = null
+  let mazeShow = null
+
+  // Fetch TMDB data if available
+  if (show.tmdb_id) {
+    try {
+      tmdbShow = await tmdbFetchShow({ id: show.tmdb_id, kind: show.type })
+    } catch (error) {
+      console.error(`Failed to fetch data from TMDB: ${show.tmdb_id} ${error}`)
+    }
+  }
+
+  // Fetch IMDB data if available
   if (show.imdb_id) {
     try {
-      const imdbShow = await imdbFetchShow(show.imdb_id)
-      if (imdbShow.image) {
-        posterURL = imdbShow.image
-      }
-      if (imdbShow.aggregateRating?.ratingValue) {
-        rating = imdbShow.aggregateRating.ratingValue
-      }
+      imdbShow = await imdbFetchShow(show.imdb_id)
     } catch (error) {
       console.error(`Failed to fetch data from IMDB: ${show.imdb_id} ${error}`)
     }
+  }
+
+  // Fetch TVMaze data if it's a TV show and has IMDB ID
+  if (show.type === "tv" && show.imdb_id) {
     try {
-      if (show.type == "tv") {
-        const mazeShow = await mazeFetchShow(show.imdb_id)
-        if (mazeShow.image?.original) {
-          posterURL = mazeShow.image.original
-        }
-      }
+      mazeShow = await mazeFetchShow(show.imdb_id)
     } catch (error) {
       console.error(
         `Failed to fetch data from TVMaze: ${show.imdb_id} ${error}`
       )
     }
+  }
+
+  // Apply priority logic for poster
+  if (tmdbShow?.poster) {
+    posterURL = tmdbShow.poster
+  } else if (show.type === "movie" && imdbShow?.image) {
+    posterURL = imdbShow.image
+  } else if (show.type === "tv" && mazeShow?.image?.original) {
+    posterURL = mazeShow.image.original
+  } else if (imdbShow?.image) {
+    // Fallback to IMDB for any type if others fail
+    posterURL = imdbShow.image
+  }
+
+  // Backdrop: only from TMDB
+  if (tmdbShow?.backdrop) {
+    backdropURL = tmdbShow.backdrop
+  }
+
+  // Logo: only from TMDB
+  if (tmdbShow?.logo) {
+    logoURL = tmdbShow.logo
+  }
+
+  // Rating: only from IMDB
+  if (imdbShow?.aggregateRating?.ratingValue) {
+    rating = imdbShow.aggregateRating.ratingValue
   }
 
   const seasons = show.seasons?.map((s) => ({ number: s.number, name: s.name }))
@@ -111,11 +152,8 @@ async function fetchShow(id: string): Promise<TeeviShow> {
     releaseDate: show.release_date,
     seasons: isSeries ? seasons : undefined,
     posterURL: posterURL,
-    backdropURL:
-      scFindImageURL(show.images, "background") ||
-      scFindImageURL(show.images, "cover_mobile") ||
-      scFindImageURL(show.images, "cover"),
-    logoURL: scFindImageURL(show.images, "logo"),
+    backdropURL: backdropURL,
+    logoURL: logoURL,
     rating: rating,
     status: mapStatus(show.status),
     relatedShows: show.related?.map((relatedShow) =>

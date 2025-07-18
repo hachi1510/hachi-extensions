@@ -55,6 +55,7 @@ export type SCShow = {
   score?: number | string
   images: SCImage[]
   imdb_id?: string
+  tmdb_id?: number
   related?: SCShowEntry[]
 }
 
