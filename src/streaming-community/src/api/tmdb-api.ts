@@ -2,6 +2,11 @@ import { fetchHTML } from "../utils/html"
 
 const API_URL = new URL(import.meta.env.VITE_TMDB_API_URL)
 
+// TMDB image resolutions
+const POSTER_MEDIUM_RESOLUTION = "w780"
+const BACKDROP_MEDIUM_RESOLUTION = "w1280"
+const LOGO_MEDIUM_RESOLUTION = "w500"
+
 export type TMDBShow = {
   title: string
   description: string
@@ -12,67 +17,55 @@ export type TMDBShow = {
 
 export type TMDBKind = "movie" | "tv"
 
-export async function fetchShow({
-  kind,
-  id,
-}: {
+export async function fetchShow(options: {
   kind: TMDBKind
   id: number
 }): Promise<TMDBShow> {
+  const primaryLanguage = "it"
+  const fallbackLanguage = "en"
+
   try {
-    const endpoint = new URL(`${kind}/${id}/images/logos`, API_URL)
-    endpoint.searchParams.append("language", "en-US")
-    endpoint.searchParams.append("image_language", "en")
+    let posterURL: string | undefined
+    let backdropURL: string | undefined
+    let logoURL: string | undefined
 
-    const html = await fetchHTML(endpoint, { referer: "https://google.com" })
-
-    const showData = html.extract({
-      logos: [
-        {
-          selector: "ul.images.logos li a.image",
-          value: "href",
-        },
-      ],
-      title: {
-        selector: "head meta[property='og:title']",
-        value: "content",
-      },
-      description: {
-        selector: "head meta[property='og:description']",
-        value: "content",
-      },
-      images: [
-        {
-          selector: "head meta[property='og:image']",
-          value: "content",
-        },
-      ],
+    const primaryShowData = await extractShowDataFromHTML({
+      ...options,
+      language: primaryLanguage,
     })
 
-    const posterURL =
-      Array.isArray(showData.images) && showData.images.length > 0
-        ? updateResolutionInUrl(
-            sanitizeTMDBImageUrl(showData.images[0]),
-            "w780"
-          )
-        : undefined
+    posterURL = primaryShowData.poster
+    backdropURL = primaryShowData.backdrop
+    logoURL = primaryShowData.logo
 
-    const backdropURL =
-      Array.isArray(showData.images) && showData.images.length > 1
-        ? updateResolutionInUrl(
-            sanitizeTMDBImageUrl(showData.images[1]),
-            "w1280"
-          )
-        : undefined
+    // If primary data is not available, fallback to another language data
+    if (!posterURL || !backdropURL || !logoURL) {
+      const fallbackShowData = await extractShowDataFromHTML({
+        ...options,
+        language: fallbackLanguage,
+      })
 
-    const firstLogoURL = pickFirstPNG(showData.logos || [])
-    const logoURL = firstLogoURL
-      ? updateResolutionInUrl(firstLogoURL, "w500")
+      // Use fallback data only if primary data is missing
+      posterURL = posterURL || fallbackShowData.poster
+      backdropURL = backdropURL || fallbackShowData.backdrop
+      logoURL = logoURL || fallbackShowData.logo
+    }
+
+    posterURL = posterURL
+      ? updateResolutionInUrl(posterURL, POSTER_MEDIUM_RESOLUTION)
+      : undefined
+
+    backdropURL = backdropURL
+      ? updateResolutionInUrl(backdropURL, BACKDROP_MEDIUM_RESOLUTION)
+      : undefined
+
+    logoURL = logoURL
+      ? updateResolutionInUrl(logoURL, LOGO_MEDIUM_RESOLUTION)
       : undefined
 
     return {
-      title: showData.title || "",
-      description: showData.description || "",
+      title: primaryShowData.title || "",
+      description: primaryShowData.description || "",
       poster: posterURL,
       backdrop: backdropURL,
       logo: logoURL,
@@ -83,13 +76,46 @@ export async function fetchShow({
   }
 }
 
-function pickFirstPNG(imageUrls: string[]): string | undefined {
-  for (const url of imageUrls) {
-    if (url.toLowerCase().endsWith(".png")) {
-      return url
-    }
-  }
-  return undefined
+async function extractShowDataFromHTML(options: {
+  kind: TMDBKind
+  id: number
+  language: string
+}) {
+  const { kind, id, language } = options
+  const url = new URL(`${kind}/${id}/images/logos`, API_URL)
+  url.searchParams.append("language", language)
+  url.searchParams.append("image_language", language)
+
+  const html = await fetchHTML(url, { referer: "https://google.com" })
+
+  return html.extract({
+    title: {
+      selector: "head meta[property='og:title']",
+      value: "content",
+    },
+    description: {
+      selector: "head meta[property='og:description']",
+      value: "content",
+    },
+    poster: {
+      selector: "head meta[property='og:image']:eq(0)",
+      value: (el) => {
+        const content = html(el).attr("content")
+        return content ? sanitizeTMDBImageUrl(content) : undefined
+      },
+    },
+    backdrop: {
+      selector: "head meta[property='og:image']:eq(1)",
+      value: (el) => {
+        const content = html(el).attr("content")
+        return content ? sanitizeTMDBImageUrl(content) : undefined
+      },
+    },
+    logo: {
+      selector: "ul.images.logos li a.image[href$='.png' i]",
+      value: "href",
+    },
+  })
 }
 
 function sanitizeTMDBImageUrl(url: string): string {

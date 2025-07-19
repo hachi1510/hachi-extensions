@@ -19,7 +19,7 @@ export async function fetchHTML(
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch HTML: ${response.status} ${response.statusText}`
+      `Failed to fetch HTML from ${input}: ${response.status} ${response.statusText}`
     )
   }
 

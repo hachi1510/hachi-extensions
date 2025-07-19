@@ -5,7 +5,6 @@ describe("fetchShow", () => {
   it("should return a movie", async () => {
     const show = await fetchShow({ kind: "movie", id: 1061474 })
     expect(show).toHaveProperty("title", "Superman")
-
     expect(show.poster).toBeTruthy()
     expect(show.backdrop).toBeTruthy()
     expect(show.logo).toBeTruthy()

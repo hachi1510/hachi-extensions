@@ -1,6 +1,6 @@
 import { fetchHTML } from "../utils/html"
 
-const API_URL = new URL(import.meta.env.VITE_SC_API_URL)
+const API_URL = new URL(import.meta.env.VITE_UPDATABLE_API_URL)
 
 export type SCImage = {
   filename: string
