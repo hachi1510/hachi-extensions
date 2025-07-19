@@ -1,0 +1,175 @@
+name: Update API URLs
+
+on:
+  schedule:
+    # Run every 2 days at 00:00 UTC
+    - cron: "0 0 */2 * *"
+  # Optional: allow manual execution
+  workflow_dispatch:
+
+# Define necessary permissions for the workflow
+permissions:
+  contents: write # Permission to modify repository files
+
+jobs:
+  check-api-url:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          # Fetch all history for proper versioning
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Find .env files with VITE_UPDATABLE_API_URL
+        id: find-files
+        run: |
+          echo "Finding .env files with VITE_UPDATABLE_API_URL..."
+          find src -name ".env" -type f -exec grep -l "VITE_UPDATABLE_API_URL" {} \; > env_files.txt
+          if [[ -s env_files.txt ]]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+            echo "Found files:"
+            cat env_files.txt
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+            echo "No .env files with VITE_UPDATABLE_API_URL found"
+          fi
+
+      - name: Check and update API URLs
+        if: steps.find-files.outputs.found == 'true'
+        run: |
+          CHANGES_MADE=false
+
+          while IFS= read -r env_file; do
+            echo "===================="
+            echo "Processing: $env_file"
+            echo "===================="
+            
+            # Extract URL from .env file
+            API_URL=$(grep VITE_UPDATABLE_API_URL "$env_file" | cut -d '=' -f2)
+            API_URL=$(echo $API_URL | tr -d '"' | tr -d ' ')
+            echo "Current URL: $API_URL"
+
+            # Check URL status
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -I "$API_URL")
+            echo "HTTP Status: $HTTP_STATUS"
+
+            if [[ "$HTTP_STATUS" == "301" || "$HTTP_STATUS" == "302" || "$HTTP_STATUS" == "307" || "$HTTP_STATUS" == "308" ]]; then
+              echo "Redirect detected, getting new URL..."
+              
+              # Get redirect URL
+              NEW_API_URL=$(curl -s -I "$API_URL" | grep -i "location:" | sed 's/location: //i' | tr -d '\r')
+              echo "Raw redirect URL: $NEW_API_URL"
+              
+              # Extract base URL and add trailing slash
+              NEW_API_URL=$(echo "$NEW_API_URL" | sed 's#^\(https\?://[^/]*\).*#\1#')
+              NEW_API_URL="${NEW_API_URL}/"
+              echo "Final URL: $NEW_API_URL"
+              
+              # Update .env file
+              sed -i "s#VITE_UPDATABLE_API_URL=.*#VITE_UPDATABLE_API_URL=$NEW_API_URL#g" "$env_file"
+              echo "Updated $env_file"
+              
+              # Mark that changes were made
+              echo "CHANGES_MADE=true" >> $GITHUB_ENV
+              
+            elif [[ "$HTTP_STATUS" == "200" ]]; then
+              echo "✅ URL is valid, no action needed"
+            else
+              echo "⚠️  URL not reachable (HTTP $HTTP_STATUS), no action taken"
+            fi
+            
+          done < env_files.txt
+
+      - name: Update package versions
+        if: steps.find-files.outputs.found == 'true' && env.CHANGES_MADE == 'true'
+        run: |
+          echo "Updating package versions for modified projects..."
+
+          while IFS= read -r env_file; do
+            PROJECT_DIR=$(dirname "$env_file")
+            PACKAGE_JSON="$PROJECT_DIR/package.json"
+            
+            if [[ -f "$PACKAGE_JSON" ]]; then
+              echo "Updating version in $PACKAGE_JSON"
+              cd "$PROJECT_DIR"
+              npm version patch -m "Bump version to %s due to API URL change"
+              cd - > /dev/null
+            else
+              echo "No package.json found for $env_file"
+            fi
+            
+          done < env_files.txt
+
+      - name: Stage changes
+        if: steps.find-files.outputs.found == 'true' && env.CHANGES_MADE == 'true'
+        run: |
+          echo "Staging all changes..."
+
+          while IFS= read -r env_file; do
+            PROJECT_DIR=$(dirname "$env_file")
+            
+            # Stage .env file
+            git add "$env_file"
+            echo "Staged: $env_file"
+            
+            # Stage package.json and package-lock.json if they exist
+            if [[ -f "$PROJECT_DIR/package.json" ]]; then
+              git add "$PROJECT_DIR/package.json"
+              echo "Staged: $PROJECT_DIR/package.json"
+            fi
+            
+            if [[ -f "$PROJECT_DIR/package-lock.json" ]]; then
+              git add "$PROJECT_DIR/package-lock.json"
+              echo "Staged: $PROJECT_DIR/package-lock.json"
+            fi
+            
+          done < env_files.txt
+
+      - name: Commit and push changes
+        if: steps.find-files.outputs.found == 'true' && env.CHANGES_MADE == 'true'
+        run: |
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            echo "Committing and pushing changes..."
+            git commit -m "chore: Update API URLs and bump versions"
+            git push
+            echo "✅ Changes committed and pushed successfully"
+          fi
+
+      - name: Summary
+        run: |
+          echo "===================="
+          echo "WORKFLOW SUMMARY"
+          echo "===================="
+
+          if [[ -f env_files.txt && -s env_files.txt ]]; then
+            echo "Processed files:"
+            while IFS= read -r file; do
+              echo "  - $file"
+            done < env_files.txt
+          else
+            echo "No .env files with VITE_UPDATABLE_API_URL found in src folder"
+          fi
+
+          if [[ "${{ env.CHANGES_MADE }}" == "true" ]]; then
+            echo "✅ API URLs were updated and versions bumped"
+          else
+            echo "ℹ️  No changes were necessary"
+          fi
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f env_files.txt
