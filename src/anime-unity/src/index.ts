@@ -187,6 +187,7 @@ async function fetchShow(id: string): Promise<TeeviShow> {
 
   // Initialize with basic data
   let posterURL = show.imageurl
+  let cleanPosterURL: string | undefined
   let backdropURL = show.imageurl_cover
   let overview = show.plot || ""
   let rating = parseShowRating(show.score)
@@ -207,6 +208,7 @@ async function fetchShow(id: string): Promise<TeeviShow> {
     try {
       const aniShow = await fetchAnilistShow(show.anilist_id)
       backdropURL = aniShow.bannerImage || backdropURL
+      cleanPosterURL = aniShow.coverImage?.extraLarge
     } catch (error) {
       console.error(`Failed to fetch data from Anilist: ${error}`)
     }
@@ -235,6 +237,7 @@ async function fetchShow(id: string): Promise<TeeviShow> {
     releaseDate: createDateFromSeason(Number(show.date), show.season),
     seasons: seasons,
     posterURL: posterURL && posterURL.trim() ? posterURL : undefined,
+    cleanPosterURL: cleanPosterURL,
     backdropURL: backdropURL && backdropURL.trim() ? backdropURL : undefined,
     rating: rating,
     status: mapStatus(show.status),
